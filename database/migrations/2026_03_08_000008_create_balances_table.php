@@ -12,6 +12,7 @@ return new class() extends Migration {
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
             $table->decimal('available', 14, 2)->default(0);
             $table->decimal('pending', 14, 2)->default(0);
+            $table->decimal('withdrawn', 14, 2)->default(0);
             $table->timestamps();
         });
     }

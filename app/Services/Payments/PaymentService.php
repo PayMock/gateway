@@ -30,6 +30,7 @@ final class PaymentService
         private readonly TokenGenerator $tokenGenerator,
         private readonly WebhookDispatcher $webhookDispatcher,
         private readonly QrCodeService $qrCodeService,
+        private readonly \App\Services\Balances\BalanceService $balanceService,
     ) {
     }
 
@@ -68,6 +69,17 @@ final class PaymentService
             $decision = $this->engine->process($context);
 
             $this->applyDecision($transaction, $decision);
+
+            // Update Ledger/Balance if approved
+            if ($transaction->status === 'approved') {
+                $this->balanceService->credit(
+                    $project,
+                    (float) $transaction->amount,
+                    'pending',
+                    "Payment Received: {$transaction->public_id}",
+                    $transaction
+                );
+            }
 
             $eventType = 'payment.' . $transaction->status;
 

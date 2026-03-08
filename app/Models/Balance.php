@@ -17,11 +17,13 @@ class Balance extends Model
         'project_id',
         'available',
         'pending',
+        'withdrawn',
     ];
 
     protected $casts = [
         'available' => 'decimal:2',
         'pending' => 'decimal:2',
+        'withdrawn' => 'decimal:2',
     ];
 
     public function project(): BelongsTo

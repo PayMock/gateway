@@ -35,6 +35,16 @@ final class TokenGenerator
         return $this->withPrefix(config('gateway.prefixes.event'));
     }
 
+    public function generateBalanceTransactionId(): string
+    {
+        return $this->withPrefix(config('gateway.prefixes.balance_transaction'));
+    }
+
+    public function generatePayoutId(): string
+    {
+        return $this->withPrefix(config('gateway.prefixes.payout'));
+    }
+
     private function withPrefix(string $prefix): string
     {
         return $prefix . Str::random(12);
