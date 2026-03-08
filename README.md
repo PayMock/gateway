@@ -25,6 +25,9 @@ PayMock is a realistic payment gateway simulator. It's designed for:
 - ✅ QR code generation for PIX payments
 - ✅ Webhook delivery with exponential retry (via AmpPHP)
 - ✅ Duplicate webhook simulation (idempotency testing)
+- ✅ **Balance & Settlement system** (Pending, Available, Withdrawn)
+- ✅ **Cash Advance (Anticipation)** with configurable fee schedules
+- ✅ **Payout Management** for withdrawals
 - ✅ Automatic OpenAPI docs via Scramble (`/docs/api`)
 
 ---
@@ -95,6 +98,53 @@ curl -X POST http://localhost:8080/api/v1/payments \
 # → status: "fraud"
 ```
 
+### 4. Check balance
+
+```bash
+curl -X GET http://localhost:8080/api/v1/balance \
+  -H "Authorization: Bearer sk_test_xxx"
+```
+
+Example response:
+```json
+{
+  "project_id": "proj_xxxxx",
+  "available": 100.00,
+  "pending": 500.00,
+  "withdrawn": 0.00,
+  "currency": "BRL"
+}
+```
+
+### 5. Request cash advance (Anticipation)
+
+```bash
+# 1. See options
+curl -X GET http://localhost:8080/api/v1/balance/advance/options \
+  -H "Authorization: Bearer sk_test_xxx"
+
+# 2. Request instant release (10% fee)
+curl -X POST http://localhost:8080/api/v1/balance/advance \
+  -H "Authorization: Bearer sk_test_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"timeframe": "instant"}'
+```
+
+### 6. Payout (Withdrawal)
+
+```bash
+curl -X POST http://localhost:8080/api/v1/payouts \
+  -H "Authorization: Bearer sk_test_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100.00,
+    "bank_details": {
+      "pix_key": "user@example.com",
+      "bank_name": "Mock Bank"
+    }
+  }'
+```
+
 ---
 
 ## Simulation Rules
@@ -140,7 +190,14 @@ GET    /api/v1/payments              List payments
 GET    /api/v1/payments/{id}         Get payment
 POST   /api/v1/payments/{id}/cancel  Cancel payment
 
-GET    /api/v1/balance               Account balance
+GET    /api/v1/balance               Account balance summary
+GET    /api/v1/balance/history       Ledger transactions
+GET    /api/v1/balance/advance/opts  List advance fees
+POST   /api/v1/balance/advance       Request anticipation
+
+GET    /api/v1/payouts               List payouts
+POST   /api/v1/payouts               Request withdrawal
+GET    /api/v1/payouts/{id}          Get payout details
 
 POST   /api/v1/webhooks              Register webhook
 GET    /api/v1/webhooks              List webhooks
