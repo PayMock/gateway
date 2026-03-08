@@ -84,6 +84,11 @@ class PayoutController extends Controller
             // 3. Increment Withdrawn Total
             $this->balanceService->getOrCreateBalance($project)->increment('withdrawn', $request->amount);
 
+            // 4. Dispatch Payout Simulation Job
+            $type = $request->transfer_details['type'] ?? 'pix';
+            $delay = $type === 'pix' ? 1 : 60; // 1s for PIX (near instant), 1m for Bank
+            \App\Jobs\ProcessPayout::dispatch($payout)->delay(now()->addSeconds($delay));
+
             return response()->json($payout, 201);
         });
     }
@@ -98,6 +103,59 @@ class PayoutController extends Controller
         $payout = Payout::where('project_id', $project->id)
             ->where('id', $id)
             ->firstOrFail();
+
+        return response()->json($payout);
+    }
+
+    /**
+     * Manually confirm a payout (Simulation).
+     */
+    public function confirm(Request $request, string $id): JsonResponse
+    {
+        $project = $request->get('_project');
+        $payout = Payout::where('project_id', $project->id)
+            ->where('id', $id)
+            ->where('status', 'requested')
+            ->firstOrFail();
+
+        $payout->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        app(\App\Services\Webhooks\WebhookDispatcher::class)->dispatch($payout, 'payout.updated');
+
+        return response()->json($payout);
+    }
+
+    /**
+     * Manually fail a payout (Simulation).
+     */
+    public function fail(Request $request, string $id): JsonResponse
+    {
+        $project = $request->get('_project');
+        $payout = Payout::where('project_id', $project->id)
+            ->where('id', $id)
+            ->where('status', 'requested')
+            ->firstOrFail();
+
+        DB::transaction(function () use ($project, $payout) {
+            $payout->update(['status' => 'failed']);
+
+            // Return funds to available balance
+            $this->balanceService->credit(
+                $project,
+                (float) $payout->amount,
+                'available',
+                "Payout Failed: {$payout->id}",
+                $payout
+            );
+
+            // Decrement withdrawn total
+            $this->balanceService->getOrCreateBalance($project)->decrement('withdrawn', $payout->amount);
+        });
+
+        app(\App\Services\Webhooks\WebhookDispatcher::class)->dispatch($payout, 'payout.updated');
 
         return response()->json($payout);
     }

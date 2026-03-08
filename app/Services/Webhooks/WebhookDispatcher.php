@@ -18,9 +18,9 @@ final class WebhookDispatcher
     ) {
     }
 
-    public function dispatch(Transaction $transaction, string $eventType, bool $duplicate = false): void
+    public function dispatch($source, string $eventType, bool $duplicate = false): void
     {
-        $event = $this->payloadBuilder->buildAndStore($transaction, $eventType);
+        $event = $this->payloadBuilder->buildAndStore($source, $eventType);
 
         $this->pushToStream($event);
 
@@ -41,6 +41,7 @@ final class WebhookDispatcher
             'event_id' => $event->id,
             'event_type' => $event->event_type,
             'transaction_id' => $event->transaction_id,
+            'payout_id' => $event->payout_id,
         ]);
     }
 }

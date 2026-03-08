@@ -48,6 +48,8 @@ Route::prefix('v1')->group(function () {
         Route::get('payouts', [PayoutController::class, 'index']);
         Route::post('payouts', [PayoutController::class, 'store']);
         Route::get('payouts/{id}', [PayoutController::class, 'show']);
+        Route::post('payouts/{id}/confirm', [PayoutController::class, 'confirm']);
+        Route::post('payouts/{id}/fail', [PayoutController::class, 'fail']);
 
         // Webhooks
         Route::get('webhooks', [WebhookController::class, 'index']);
