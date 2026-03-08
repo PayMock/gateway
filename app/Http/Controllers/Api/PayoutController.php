@@ -41,8 +41,14 @@ class PayoutController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|min:5.00', // Minimum withdrawal 5.00
             'bank_details' => 'required|array',
+            'bank_details.type' => 'required|in:pix,bank_account',
+            'bank_details.pix_key' => 'required_if:bank_details.type,pix|string',
+            'bank_details.key_type' => 'required_if:bank_details.type,pix|in:cpf,cnpj,email,phone,random',
+            'bank_details.bank' => 'required_if:bank_details.type,bank_account|string',
+            'bank_details.agency' => 'required_if:bank_details.type,bank_account|string',
+            'bank_details.account' => 'required_if:bank_details.type,bank_account|string',
         ]);
 
         $project = $request->get('_project');

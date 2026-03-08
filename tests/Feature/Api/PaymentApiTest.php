@@ -35,6 +35,7 @@ final class PaymentApiTest extends TestCase
                 'amount' => 100.00,
                 'currency' => 'BRL',
                 'method' => 'credit_card',
+                'card_number' => '4111111111111111',
             ]);
 
         $response->assertStatus(201)
@@ -55,6 +56,7 @@ final class PaymentApiTest extends TestCase
             ->postJson('/api/v1/payments', [
                 'amount' => 13.00,
                 'method' => 'credit_card',
+                'card_number' => '4111111111111111',
             ]);
 
         $response->assertStatus(201)
@@ -82,6 +84,7 @@ final class PaymentApiTest extends TestCase
             ->postJson('/api/v1/payments', [
                 'amount' => 777.00,
                 'method' => 'credit_card',
+                'card_number' => '4111111111111111',
             ]);
 
         $response->assertStatus(201)
@@ -96,6 +99,7 @@ final class PaymentApiTest extends TestCase
             ->postJson('/api/v1/payments', [
                 'amount' => 50.00,
                 'method' => 'credit_card',
+                'card_number' => '4111111111111111',
             ]);
 
         $response->assertStatus(201)
@@ -110,11 +114,19 @@ final class PaymentApiTest extends TestCase
 
         $first = $this->withApiKey()
             ->withHeader('Idempotency-Key', $idempotencyKey)
-            ->postJson('/api/v1/payments', ['amount' => 100.00, 'method' => 'credit_card']);
+            ->postJson('/api/v1/payments', [
+                'amount' => 100.00,
+                'method' => 'credit_card',
+                'card_number' => '4111111111111111',
+            ]);
 
         $second = $this->withApiKey()
             ->withHeader('Idempotency-Key', $idempotencyKey)
-            ->postJson('/api/v1/payments', ['amount' => 100.00, 'method' => 'credit_card']);
+            ->postJson('/api/v1/payments', [
+                'amount' => 100.00,
+                'method' => 'credit_card',
+                'card_number' => '4111111111111111',
+            ]);
 
         $this->assertEquals($first->json('id'), $second->json('id'));
     }
@@ -157,6 +169,7 @@ final class PaymentApiTest extends TestCase
             $this->withApiKey()->postJson('/api/v1/payments', [
                 'amount' => 100.00,
                 'method' => 'credit_card',
+                'card_number' => '4111111111111111',
             ]);
         }
 
@@ -175,10 +188,15 @@ final class PaymentApiTest extends TestCase
     public function canCancelAPayment(): void
     {
         $createResponse = $this->withApiKey()
-            ->postJson('/api/v1/payments', ['amount' => 100.00, 'method' => 'credit_card']);
+            ->postJson('/api/v1/payments', [
+                'amount' => 100.00,
+                'method' => 'credit_card',
+                'card_number' => '4111111111111111',
+            ]);
 
         // Create a pending transaction manually so we can cancel it
         $transaction = Transaction::where('public_id', $createResponse->json('id'))->first();
+        $this->assertNotNull($transaction, 'Transaction creation failed');
         $transaction->status = 'pending';
         $transaction->save();
 
@@ -196,6 +214,7 @@ final class PaymentApiTest extends TestCase
             ->postJson('/api/v1/payments', [
                 'amount' => 777.00, // Lucky 777 → approved
                 'method' => 'credit_card',
+                'card_number' => '4111111111111111',
             ]);
 
         $paymentId = $createResponse->json('id');
