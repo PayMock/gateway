@@ -2,6 +2,7 @@ FROM php:8.3-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
+    $PHPIZE_DEPS \
     git \
     curl \
     libpq-dev \
@@ -13,11 +14,13 @@ RUN apk add --no-cache \
     freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \
-    supervisor
+    libxml2-dev \
+    supervisor \
+    linux-headers
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
+    && docker-php-ext-install -j$(nproc) \
         pdo \
         pdo_pgsql \
         pgsql \
@@ -32,6 +35,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 
 # Install Redis extension
 RUN pecl install redis && docker-php-ext-enable redis
+
+# Clean up build dependencies to keep image small
+RUN apk del $PHPIZE_DEPS
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer

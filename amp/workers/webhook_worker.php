@@ -15,7 +15,7 @@
  * Run: php amp/workers/webhook_worker.php
  */
 
-require_once __DIR__ . '/../amp/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request as AmpRequest;
