@@ -2,7 +2,6 @@
 
 namespace App\Services\Webhooks;
 
-use App\Models\Transaction;
 use App\Models\WebhookEvent;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
