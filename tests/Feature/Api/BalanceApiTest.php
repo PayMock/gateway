@@ -145,4 +145,26 @@ class BalanceApiTest extends TestCase
         $summary->assertJsonFragment(['amount' => 900, 'currency' => 'brl']); // available (1000 - 100)
         $summary->assertJsonFragment(['amount' => 100, 'currency' => 'brl']); // withdrawn
     }
+    public function testCannotAdvanceMoreThanPending(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->apiKey)
+            ->postJson('/api/v1/balance/advance', [
+                'amount' => 100.00,
+                'days' => 0
+            ]);
+
+        $response->assertStatus(400); // Caught by controller
+    }
+
+    public function testCannotPayoutMoreThanAvailable(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->apiKey)
+            ->postJson('/api/v1/payouts', [
+                'amount' => 100.00,
+                'bank_details' => ['pix_key' => 'test@test.com']
+            ]);
+
+        $response->assertStatus(400)
+            ->assertJsonFragment(['message' => 'Insufficient available balance for withdrawal.']);
+    }
 }

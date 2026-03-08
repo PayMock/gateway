@@ -22,7 +22,7 @@ final class PaymentApiTest extends TestCase
         parent::setUp();
 
         // Mock Redis to avoid needing a real Redis connection in tests
-        Redis::shouldReceive('xadd')->andReturn('ok');
+        Redis::shouldReceive('xadd')->byDefault()->andReturn('ok');
 
         $this->project = $this->createProject();
     }
@@ -117,6 +117,21 @@ final class PaymentApiTest extends TestCase
             ->postJson('/api/v1/payments', ['amount' => 100.00, 'method' => 'credit_card']);
 
         $this->assertEquals($first->json('id'), $second->json('id'));
+    }
+
+    #[Test]
+    public function pixDuplicateWebhookSendsTwoWebhooks(): void
+    {
+        // Use a clean mock for this test
+        Redis::shouldReceive('xadd')->times(2)->andReturn('ok');
+
+        $this->withApiKey()
+            ->postJson('/api/v1/payments', [
+                'amount' => 50.77, // Rule PIX_DUPLICATE_WEBHOOK
+                'method' => 'pix',
+            ])
+            ->assertStatus(201)
+            ->assertJsonFragment(['status' => 'approved']);
     }
 
     #[Test]
