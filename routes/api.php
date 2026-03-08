@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BalanceController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PayoutController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\SimulationController;
 use App\Http\Controllers\Api\WebhookController;
@@ -38,7 +39,15 @@ Route::prefix('v1')->group(function () {
         Route::post('payments/{id}/cancel', [PaymentController::class, 'cancel']);
 
         // Balance
-        Route::get('balance', [BalanceController::class, 'show']);
+        Route::get('balance', [BalanceController::class, 'index']);
+        Route::get('balance/history', [BalanceController::class, 'history']);
+        Route::get('balance/advance/options', [BalanceController::class, 'advanceOptions']);
+        Route::post('balance/advance', [BalanceController::class, 'requestAdvance']);
+
+        // Payouts
+        Route::get('payouts', [PayoutController::class, 'index']);
+        Route::post('payouts', [PayoutController::class, 'store']);
+        Route::get('payouts/{id}', [PayoutController::class, 'show']);
 
         // Webhooks
         Route::get('webhooks', [WebhookController::class, 'index']);

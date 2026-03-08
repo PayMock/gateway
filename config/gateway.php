@@ -24,6 +24,8 @@ return [
         'event' => 'evt_',
         'webhook' => 'wh_',
         'api_key' => 'sk_test_',
+        'balance_transaction' => 'btxn_',
+        'payout' => 'po_',
     ],
 
     /*
