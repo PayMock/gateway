@@ -8,7 +8,7 @@ return new class() extends Migration {
     public function up(): void
     {
         Schema::create('balance_transactions', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->string('id', 40)->primary();
             $table->uuid('project_id');
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
 
@@ -18,7 +18,7 @@ return new class() extends Migration {
             $table->string('description')->nullable();
 
             $table->string('source_type')->nullable(); // payment, payout, advance, fee
-            $table->uuid('source_id')->nullable();
+            $table->string('source_id', 40)->nullable();
 
             $table->timestamp('created_at')->useCurrent();
 

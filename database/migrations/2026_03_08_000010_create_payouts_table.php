@@ -8,7 +8,7 @@ return new class() extends Migration {
     public function up(): void
     {
         Schema::create('payouts', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->string('id', 40)->primary();
             $table->uuid('project_id');
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
 
