@@ -41,6 +41,8 @@ while (true) {
         continue;
     }
 
+    $entries['webhooks_stream'] ??= [];
+
     foreach ($entries['webhooks_stream'] as $entryId => $data) {
         async(function () use ($data, $httpClient, $signatureService, $retryDelays) {
             $event = WebhookEvent::with('transaction.project.webhooks')
