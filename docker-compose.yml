@@ -1,0 +1,87 @@
+services:
+  app:
+    build:
+      context: docker/php
+      dockerfile: Dockerfile
+    container_name: paymock_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - paymock
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: paymock_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - paymock
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: paymock_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paymock
+      POSTGRES_USER: paymock
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - paymock
+
+  redis:
+    image: redis:7-alpine
+    container_name: paymock_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - paymock
+
+  amp_worker:
+    build:
+      context: docker/php
+      dockerfile: Dockerfile
+    container_name: paymock_amp_worker
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php amp/workers/webhook_worker.php
+    volumes:
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - paymock
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  paymock:
+    driver: bridge
