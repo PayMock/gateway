@@ -125,7 +125,7 @@ class BalanceApiTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->apiKey)
             ->postJson('/api/v1/payouts', [
                 'amount' => 100.00,
-                'bank_details' => [
+                'transfer_details' => [
                     'type' => 'bank_account',
                     'bank' => 'PayMock Bank',
                     'agency' => '0001',
@@ -162,7 +162,7 @@ class BalanceApiTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->apiKey)
             ->postJson('/api/v1/payouts', [
                 'amount' => 100.00,
-                'bank_details' => [
+                'transfer_details' => [
                     'type' => 'pix',
                     'pix_key' => 'test@test.com',
                     'key_type' => 'email'

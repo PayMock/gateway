@@ -138,7 +138,7 @@ curl -X POST http://localhost:8080/api/v1/payouts \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 100.00,
-    "bank_details": {
+    "transfer_details": {
       "pix_key": "user@example.com",
       "bank_name": "Mock Bank"
     }

@@ -42,13 +42,13 @@ class PayoutController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:5.00', // Minimum withdrawal 5.00
-            'bank_details' => 'required|array',
-            'bank_details.type' => 'required|in:pix,bank_account',
-            'bank_details.pix_key' => 'required_if:bank_details.type,pix|string',
-            'bank_details.key_type' => 'required_if:bank_details.type,pix|in:cpf,cnpj,email,phone,random',
-            'bank_details.bank' => 'required_if:bank_details.type,bank_account|string',
-            'bank_details.agency' => 'required_if:bank_details.type,bank_account|string',
-            'bank_details.account' => 'required_if:bank_details.type,bank_account|string',
+            'transfer_details' => 'required|array',
+            'transfer_details.type' => 'required|in:pix,bank_account',
+            'transfer_details.pix_key' => 'required_if:transfer_details.type,pix|string',
+            'transfer_details.key_type' => 'required_if:transfer_details.type,pix|in:cpf,cnpj,email,phone,random',
+            'transfer_details.bank' => 'required_if:transfer_details.type,bank_account|string',
+            'transfer_details.agency' => 'required_if:transfer_details.type,bank_account|string',
+            'transfer_details.account' => 'required_if:transfer_details.type,bank_account|string',
         ]);
 
         $project = $request->get('_project');
@@ -69,7 +69,7 @@ class PayoutController extends Controller
                 'project_id' => $project->id,
                 'amount' => $request->amount,
                 'status' => 'requested',
-                'bank_details' => $request->bank_details,
+                'transfer_details' => $request->transfer_details,
             ]);
 
             // 2. Debit from Available Balance via Ledger

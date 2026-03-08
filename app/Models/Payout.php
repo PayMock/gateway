@@ -16,13 +16,13 @@ class Payout extends Model
         'project_id',
         'amount',
         'status',
-        'bank_details',
+        'transfer_details',
         'completed_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'bank_details' => 'array',
+        'transfer_details' => 'array',
         'completed_at' => 'datetime',
     ];
 

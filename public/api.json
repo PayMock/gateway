@@ -362,7 +362,10 @@
                                         "minimum": 0.01
                                     },
                                     "days": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "enum": [
+                                            ""
+                                        ]
                                     },
                                     "_project": {
                                         "type": "string"
@@ -608,7 +611,7 @@
                                 "properties": {
                                     "amount": {
                                         "type": "number",
-                                        "minimum": 0
+                                        "minimum": 0.01
                                     },
                                     "currency": {
                                         "type": "string",
@@ -647,11 +650,9 @@
                                         "maxLength": 255
                                     },
                                     "card_number": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ],
-                                        "maxLength": 20
+                                        "type": "string",
+                                        "minLength": 13,
+                                        "maxLength": 19
                                     },
                                     "metadata": {
                                         "type": [
@@ -1138,13 +1139,45 @@
                                 "properties": {
                                     "amount": {
                                         "type": "number",
-                                        "minimum": 0.01
+                                        "minimum": 5
                                     },
-                                    "bank_details": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
+                                    "transfer_details": {
+                                        "type": "object",
+                                        "description": "Minimum withdrawal 5.00",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "pix",
+                                                    "bank_account"
+                                                ]
+                                            },
+                                            "pix_key": {
+                                                "type": "string"
+                                            },
+                                            "key_type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "cpf",
+                                                    "cnpj",
+                                                    "email",
+                                                    "phone",
+                                                    "random"
+                                                ]
+                                            },
+                                            "bank": {
+                                                "type": "string"
+                                            },
+                                            "agency": {
+                                                "type": "string"
+                                            },
+                                            "account": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "type"
+                                        ]
                                     },
                                     "_project": {
                                         "type": "string"
@@ -1152,7 +1185,7 @@
                                 },
                                 "required": [
                                     "amount",
-                                    "bank_details"
+                                    "transfer_details"
                                 ]
                             }
                         }
@@ -1674,7 +1707,7 @@
                     "status": {
                         "type": "string"
                     },
-                    "bank_details": {
+                    "transfer_details": {
                         "type": [
                             "array",
                             "null"
@@ -1708,7 +1741,7 @@
                     "project_id",
                     "amount",
                     "status",
-                    "bank_details",
+                    "transfer_details",
                     "completed_at",
                     "created_at",
                     "updated_at"
