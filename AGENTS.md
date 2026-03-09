@@ -41,16 +41,26 @@ When adding or modifying rules:
 - Errors: `{"error": {"type": "...", "code": "...", "message": "..."}}`
 - Lists: `{"object": "list", "data": [...], "has_more": bool}`
 
+### Charge flow (Merchant → Customer)
+
+```
+1. Backend: POST /api/v1/charges → { id: "chg_xxx", status: "pending" }
+2. Frontend: POST /api/v1/public/charges/{chg_xxx}/pay
+     PIX  → { status: "pending", qr_code_url, qr_code_base64 }
+              Customer visits /pay/{token} → clicks "Confirm" → charge paid
+     Card → Simulation engine runs → { status: "paid|fraud|failed" }
+```
+
 ### Public (client-side) routes — `/api/v1/public/*`
 - Authentication: `X-Public-Key: pk_test_xxx` (safe for browser/mobile)
 - Origin control: `Origin` header validated against `project.allowed_origins`
   - If `allowed_origins` is null/empty → no origin restriction
   - Supports wildcard patterns: `*.domain.com`, `*.*.domain.com`
 - Available endpoints:
-  - `GET /api/v1/public/payment-methods` — list supported payment methods
-  - `POST /api/v1/public/payments` — create payment
-  - `GET /api/v1/public/payments/{id}/status` — poll payment status
-  - `GET /api/v1/public/payments/{id}/qrcode` — fetch QR code SVG
+  - `GET  /api/v1/public/payment-methods` — list supported payment methods
+  - `POST /api/v1/public/charges/{id}/pay` — pay a charge (PIX or credit card)
+  - `GET  /api/v1/public/charges/{id}/status` — poll charge status
+  - `GET  /api/v1/public/charges/{id}/qrcode` — fetch PIX QR code SVG
 
 ## Database
 

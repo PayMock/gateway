@@ -37,13 +37,18 @@ PaymentService
 
 ## Key Design Decisions
 
-1. **Stripe-style API**: `/v1/payments`, opaque IDs (`pay_xxx`, `sk_test_xxx`), cursor pagination, `object` field in responses
-2. **Simulation Engine**: Rule pipeline with priority ordering. Higher priority = evaluated first. First matching rule wins.
+1. **Stripe-style API**: opaque IDs (`pay_xxx`, `chg_xxx`, `sk_test_xxx`), cursor pagination, `object` field
+2. **Simulation Engine**: Rule pipeline with priority ordering. Higher priority = evaluated first. First match wins.
 3. **No auth on project creation**: POST /v1/projects is public to allow bootstrapping
-4. **Idempotency**: Supported via `Idempotency-Key` header, checked before simulation
+4. **Idempotency**: Supported via `Idempotency-Key` header on direct payments
 5. **Forced rules**: `X-PayMock-Rule: RULE_ID` bypasses the normal pipeline for deterministic testing
 6. **Dual key system**: `api_key` (sk_test_xxx) for server-to-server; `public_key` (pk_test_xxx) for client-side
-7. **Origin allowlist**: Public routes validate the `Origin` header against `project.allowed_origins`; wildcards supported
+7. **Origin allowlist**: Public routes validate `Origin` against `project.allowed_origins`; wildcards supported
+8. **Charge model**: Separates "payment intent" (merchant) from "payment execution" (customer)
+   - Merchant creates `Charge` via private API → gets `chg_xxx`
+   - Customer pays via public API with PIX or credit card
+   - PIX: stays pending, QR URL points to `/pay/{token}` confirmation page
+   - Card: simulation runs immediately, charge marked paid if approved
 
 ---
 
@@ -67,6 +72,7 @@ app/
   Http/Middleware/           — AuthenticateProject, AuthenticatePublicRequest
   Models/                    — Eloquent models
   Services/
+    Charges/                 — ChargeService
     Payments/                — PaymentService, QrCodeService
     Webhooks/                — WebhookDispatcher, WebhookPayloadBuilder
     Security/                — TokenGenerator, SignatureService, OriginValidator
@@ -85,7 +91,7 @@ config/
   simulation_rules.php       — all rule classes and magic trigger values
 
 database/
-  migrations/                — 8 migrations (projects → balances)
+  migrations/                — 19 migrations (projects → charges)
 ```
 
 ---
@@ -117,15 +123,29 @@ database/
 ## API Endpoints
 
 ```
-POST   /api/v1/projects              — create project (public)
+--- Private (server-to-server) — Authorization: Bearer sk_test_xxx ---
+
+POST   /api/v1/projects              — create project (no auth)
 GET    /api/v1/projects/me           — get current project
 
-POST   /api/v1/payments              — create payment
-GET    /api/v1/payments              — list payments (?status=&limit=&starting_after=)
+GET    /api/v1/charges               — list charges
+POST   /api/v1/charges               — create charge (chg_xxx)
+GET    /api/v1/charges/{id}          — get charge
+POST   /api/v1/charges/{id}/cancel   — cancel charge
+
+POST   /api/v1/payments              — direct payment (server-side only)
+GET    /api/v1/payments              — list payments
 GET    /api/v1/payments/{id}         — get payment
 POST   /api/v1/payments/{id}/cancel  — cancel payment
 
 GET    /api/v1/balance               — get balance
+GET    /api/v1/balance/history       — ledger history
+GET    /api/v1/balance/advance/options — advance options
+POST   /api/v1/balance/advance       — request cash advance
+
+GET    /api/v1/payouts               — list payouts
+POST   /api/v1/payouts               — create payout
+GET    /api/v1/payouts/{id}          — get payout
 
 POST   /api/v1/webhooks              — register webhook
 GET    /api/v1/webhooks              — list webhooks
@@ -133,12 +153,17 @@ GET    /api/v1/webhooks              — list webhooks
 GET    /api/v1/simulation/rules      — list all simulation rules
 POST   /api/v1/simulate/payment      — force a simulation scenario
 
---- Public (client-side) — X-Public-Key + Origin validation ---
+--- Public (client-side) — X-Public-Key + Origin header ---
 
-GET    /api/v1/public/payment-methods           — list payment methods
-POST   /api/v1/public/payments                  — create payment
-GET    /api/v1/public/payments/{id}/status      — poll payment status
-GET    /api/v1/public/payments/{id}/qrcode      — QR code SVG image
+GET    /api/v1/public/payment-methods              — list payment methods
+POST   /api/v1/public/charges/{id}/pay             — pay charge (PIX or card)
+GET    /api/v1/public/charges/{id}/status          — poll charge status
+GET    /api/v1/public/charges/{id}/qrcode          — PIX QR code (SVG)
+
+--- Web (browser) — payment confirmation page ---
+
+GET    /pay/{token}                  — PIX payment confirmation page
+POST   /pay/{token}/confirm          — simulate customer confirming PIX payment
 ```
 
 ---
@@ -151,5 +176,7 @@ Files:
 - `tests/Unit/Simulation/SimulationRulesTest.php` — all rule logic
 - `tests/Unit/Security/OriginValidatorTest.php` — origin wildcard matching
 - `tests/Feature/Api/ProjectApiTest.php` — project CRUD
-- `tests/Feature/Api/PaymentApiTest.php` — payment lifecycle + simulation rules
-- `tests/Feature/Api/PublicPaymentApiTest.php` — public routes + origin validation
+- `tests/Feature/Api/PaymentApiTest.php` — direct payment lifecycle + simulation rules
+- `tests/Feature/Api/ChargeApiTest.php` — charge CRUD (private)
+- `tests/Feature/Api/PublicChargeApiTest.php` — charge pay via public API
+- `tests/Feature/Api/PublicPaymentApiTest.php` — public key auth + origin validation
