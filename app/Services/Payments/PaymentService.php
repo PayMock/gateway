@@ -48,6 +48,7 @@ final class PaymentService
      *   metadata?: array<string, mixed>,
      *   idempotency_key?: string,
      *   forced_rule?: string,
+     *   charge_id?: string,
      * } $data
      */
     public function createPayment(Project $project, array $data): Transaction
@@ -109,6 +110,7 @@ final class PaymentService
             'description' => $data['description'] ?? null,
             'customer_name' => $data['customer_name'] ?? null,
             'customer_email' => $data['customer_email'] ?? null,
+            'charge_id' => $data['charge_id'] ?? null,
             'card_last4' => isset($data['card_number']) ? substr($data['card_number'], -4) : null,
             'metadata' => $data['metadata'] ?? null,
             'idempotency_key' => $data['idempotency_key'] ?? null,

@@ -22,8 +22,9 @@ final class ProjectController extends Controller
     /**
      * Create a new project.
      *
-     * Creates a new sandbox project and returns the API key.
+     * Creates a new sandbox project and returns the API key and public key.
      * Store the api_key securely — it will not be shown again in list responses.
+     * The public_key is safe to use in client-side code for public API routes.
      *
      * @operationId createProject
      */
@@ -32,12 +33,16 @@ final class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'webhook_url' => 'nullable|url|max:500',
+            'allowed_origins' => 'nullable|array',
+            'allowed_origins.*' => 'string|max:255',
         ]);
 
         $project = Project::create([
             'name' => $validated['name'],
             'public_id' => $this->tokenGenerator->generateProjectId(),
             'api_key' => $this->tokenGenerator->generateApiKey(),
+            'public_key' => $this->tokenGenerator->generatePublicKey(),
+            'allowed_origins' => $validated['allowed_origins'] ?? null,
             'webhook_url' => $validated['webhook_url'] ?? null,
             'is_active' => true,
         ]);
@@ -53,6 +58,8 @@ final class ProjectController extends Controller
             'object' => 'project',
             'name' => $project->name,
             'api_key' => $project->api_key,
+            'public_key' => $project->public_key,
+            'allowed_origins' => $project->allowed_origins ?? [],
             'webhook_url' => $project->webhook_url,
             'created' => $project->created_at->timestamp,
         ], 201);
@@ -71,6 +78,8 @@ final class ProjectController extends Controller
             'id' => $project->public_id,
             'object' => 'project',
             'name' => $project->name,
+            'public_key' => $project->public_key,
+            'allowed_origins' => $project->allowed_origins ?? [],
             'webhook_url' => $project->webhook_url,
             'created' => $project->created_at->timestamp,
         ]);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Services\Charges\ChargeService;
 use App\Services\Payments\QrCodeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,6 +16,7 @@ final class PaymentPageController extends Controller
 {
     public function __construct(
         private readonly QrCodeService $qrCodeService,
+        private readonly ChargeService $chargeService,
     ) {
     }
 
@@ -65,6 +67,15 @@ final class PaymentPageController extends Controller
 
         $transaction->status = 'approved';
         $transaction->save();
+
+        // If this transaction is linked to a charge, mark the charge as paid too
+        if ($transaction->charge_id !== null) {
+            $charge = $transaction->charge;
+
+            if ($charge !== null && $charge->isPending()) {
+                $this->chargeService->markAsPaid($charge);
+            }
+        }
 
         return response(view('payment.success', compact('transaction')));
     }

@@ -42,6 +42,8 @@ PaymentService
 3. **No auth on project creation**: POST /v1/projects is public to allow bootstrapping
 4. **Idempotency**: Supported via `Idempotency-Key` header, checked before simulation
 5. **Forced rules**: `X-PayMock-Rule: RULE_ID` bypasses the normal pipeline for deterministic testing
+6. **Dual key system**: `api_key` (sk_test_xxx) for server-to-server; `public_key` (pk_test_xxx) for client-side
+7. **Origin allowlist**: Public routes validate the `Origin` header against `project.allowed_origins`; wildcards supported
 
 ---
 
@@ -62,12 +64,12 @@ See `UNIVERSAL-CODE-STYLE-RULES.md` in the parent directory. Key rules:
 ```
 app/
   Http/Controllers/Api/      — API controllers
-  Http/Middleware/           — AuthenticateProject
+  Http/Middleware/           — AuthenticateProject, AuthenticatePublicRequest
   Models/                    — Eloquent models
   Services/
     Payments/                — PaymentService, QrCodeService
     Webhooks/                — WebhookDispatcher, WebhookPayloadBuilder
-    Security/                — TokenGenerator, SignatureService
+    Security/                — TokenGenerator, SignatureService, OriginValidator
   Simulation/
     Engine/                  — SimulationEngine, SimulationContext, SimulationDecision
     Rules/                   — Card/, Amount/, Pix/, Time/, User/ rule classes
@@ -131,8 +133,12 @@ GET    /api/v1/webhooks              — list webhooks
 GET    /api/v1/simulation/rules      — list all simulation rules
 POST   /api/v1/simulate/payment      — force a simulation scenario
 
-GET    /pay/{token}                  — public payment page (QR landing)
-POST   /pay/{token}/confirm          — confirm payment
+--- Public (client-side) — X-Public-Key + Origin validation ---
+
+GET    /api/v1/public/payment-methods           — list payment methods
+POST   /api/v1/public/payments                  — create payment
+GET    /api/v1/public/payments/{id}/status      — poll payment status
+GET    /api/v1/public/payments/{id}/qrcode      — QR code SVG image
 ```
 
 ---
@@ -143,5 +149,7 @@ Run: `php artisan test`
 
 Files:
 - `tests/Unit/Simulation/SimulationRulesTest.php` — all rule logic
+- `tests/Unit/Security/OriginValidatorTest.php` — origin wildcard matching
 - `tests/Feature/Api/ProjectApiTest.php` — project CRUD
 - `tests/Feature/Api/PaymentApiTest.php` — payment lifecycle + simulation rules
+- `tests/Feature/Api/PublicPaymentApiTest.php` — public routes + origin validation

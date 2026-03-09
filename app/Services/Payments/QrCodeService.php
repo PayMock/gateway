@@ -42,6 +42,17 @@ final class QrCodeService
     }
 
     /**
+     * Returns the QR code as a base64-encoded SVG string.
+     * Use as: data:image/svg+xml;base64,{result}
+     */
+    public function generateBase64(Transaction $transaction): string
+    {
+        $svg = $this->generateQrCodeSvg($transaction);
+
+        return base64_encode($svg);
+    }
+
+    /**
      * Validates a QR token and returns the public payment ID or null on failure.
      */
     public function validateToken(string $token): ?string
