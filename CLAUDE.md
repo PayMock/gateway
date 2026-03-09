@@ -18,7 +18,7 @@ An open-source **simulated payment gateway** for developer testing and integrati
 
 ## Coding Standards
 
-**Must follow** `UNIVERSAL-CODE-STYLE-RULES.md` in the parent directory.
+**Must follow** `UNIVERSAL-CODE-STYLE-RULES.md` in current or in the parent directory.
 
 Key points:
 - **Explicit braces** on all control structures (never `if (x) return;`)
