@@ -18,7 +18,8 @@ return [
     /*
      * The path where your OpenAPI specification will be exported.
      */
-    'export_path' => 'api.json',
+    // 'export_path' => 'api.json',
+    'export_path' => public_path('api.json'),
 
     'info' => [
         /*
@@ -109,7 +110,7 @@ return [
      * - 'varnames' - Case names are stored in the `x-enum-varnames` enum schema extension.
      * - false - Case names are not stored.
      */
-    'enum_cases_names_strategy' => false,
+    'enum_cases_names_strategy' => 'names',
 
     /**
      * When Scramble encounters deep objects in query parameters, it flattens the parameters so the generated

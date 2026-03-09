@@ -17,6 +17,8 @@ class Project extends Model
         'name',
         'public_id',
         'api_key',
+        'public_key',
+        'allowed_origins',
         'webhook_url',
         'webhook_secret',
         'is_active',
@@ -24,6 +26,7 @@ class Project extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'allowed_origins' => 'array',
     ];
 
     protected $hidden = [

@@ -13,6 +13,14 @@ final class CardStolenRule extends AbstractRule
 {
     public function matches(SimulationContext $context): bool
     {
+        $fraudChecks = ['0000', '1313', '171', '13'];
+
+        foreach ($fraudChecks as $value) {
+            if ($this->cardEndsWith($context, strval($value))) {
+                return true;
+            }
+        }
+
         return $this->cardEndsWith($context, '0000');
     }
 

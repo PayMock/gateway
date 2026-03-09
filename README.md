@@ -28,6 +28,7 @@ PayMock is a realistic payment gateway simulator. It's designed for:
 - ✅ **Balance & Settlement system** (Pending, Available, Withdrawn)
 - ✅ **Cash Advance (Anticipation)** with configurable fee schedules
 - ✅ **Payout Management** for withdrawals
+- ✅ **Public API** (`/v1/public/*`) — client-side safe routes with `public_key` + origin allowlist
 - ✅ Automatic OpenAPI docs via Scramble (`/docs/api`)
 
 ---
@@ -74,9 +75,13 @@ Response:
 {
   "id": "proj_xxxxxxxxxxx",
   "object": "project",
-  "api_key": "sk_test_PROJECT_API_KEY"
+  "api_key": "sk_test_PROJECT_API_KEY",
+  "public_key": "pk_test_PUBLIC_KEY",
+  "allowed_origins": []
 }
 ```
+
+The `api_key` is for **server-to-server** calls only. The `public_key` is safe to embed in frontend code.
 
 ### 2. Create a payment
 
@@ -130,7 +135,45 @@ curl -X POST http://localhost:8080/api/v1/balance/advance \
   -d '{"timeframe": "instant"}'
 ```
 
-### 6. Payout (Withdrawal)
+### 6. Use public routes from the frontend
+
+```bash
+# List payment methods (no private key needed)
+curl http://localhost:8080/api/v1/public/payment-methods \
+  -H "X-Public-Key: pk_test_xxx"
+
+# Create a payment from the browser
+curl -X POST http://localhost:8080/api/v1/public/payments \
+  -H "X-Public-Key: pk_test_xxx" \
+  -H "Origin: https://myapp.com" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 50.00, "method": "pix"}'
+
+# Poll status
+curl http://localhost:8080/api/v1/public/payments/pay_xxx/status \
+  -H "X-Public-Key: pk_test_xxx"
+
+# Fetch QR code SVG
+curl http://localhost:8080/api/v1/public/payments/pay_xxx/qrcode \
+  -H "X-Public-Key: pk_test_xxx" > qrcode.svg
+```
+
+You can restrict which origins are allowed by setting `allowed_origins` on project creation:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/projects \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My App",
+    "allowed_origins": ["https://myapp.com", "*.staging.myapp.com"]
+  }'
+```
+
+Wildcard rules:
+- `*.domain.com` — matches one subdomain level (`app.domain.com` ✅, `x.app.domain.com` ❌)
+- `*.*.domain.com` — matches two subdomain levels (`x.app.domain.com` ✅)
+
+### 7. Payout (Withdrawal)
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/payouts \
@@ -138,7 +181,7 @@ curl -X POST http://localhost:8080/api/v1/payouts \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 100.00,
-    "bank_details": {
+    "transfer_details": {
       "pix_key": "user@example.com",
       "bank_name": "Mock Bank"
     }
@@ -181,6 +224,8 @@ OpenAPI JSON: `http://localhost:8080/docs/api.json`
 
 ### Endpoints
 
+#### Private routes (server-to-server, `Authorization: Bearer sk_test_xxx`)
+
 ```
 POST   /api/v1/projects              Create project (public)
 GET    /api/v1/projects/me           Get current project
@@ -204,6 +249,15 @@ GET    /api/v1/webhooks              List webhooks
 
 GET    /api/v1/simulation/rules      List simulation rules
 POST   /api/v1/simulate/payment      Force simulation scenario
+```
+
+#### Public routes (client-side, `X-Public-Key: pk_test_xxx` + `Origin`)
+
+```
+GET    /api/v1/public/payment-methods           List payment methods
+POST   /api/v1/public/payments                  Create payment
+GET    /api/v1/public/payments/{id}/status      Poll payment status
+GET    /api/v1/public/payments/{id}/qrcode      Fetch QR code (SVG)
 ```
 
 ---

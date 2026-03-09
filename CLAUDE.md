@@ -18,7 +18,7 @@ An open-source **simulated payment gateway** for developer testing and integrati
 
 ## Coding Standards
 
-**Must follow** `UNIVERSAL-CODE-STYLE-RULES.md` in the parent directory.
+**Must follow** `UNIVERSAL-CODE-STYLE-RULES.md` in current or in the parent directory.
 
 Key points:
 - **Explicit braces** on all control structures (never `if (x) return;`)
@@ -44,6 +44,12 @@ Key points:
 3. Add docblock for Scramble OpenAPI generation
 4. Write Feature test in `tests/Feature/Api/`
 
+### Adding a public (client-side) endpoint
+
+1. Add method to `PublicPaymentController` (or create a dedicated public controller)
+2. Add route under the `v1/public` prefix with `AuthenticatePublicRequest` middleware
+3. Public endpoints must NOT expose internal fields (e.g. `simulation_rule`, `api_key`)
+
 ## Important Files
 
 | File | Purpose |
@@ -53,4 +59,7 @@ Key points:
 | `app/Simulation/Engine/SimulationContext.php` | DTO passed to all rules |
 | `app/Simulation/Engine/SimulationDecision.php` | Result from simulation pipeline |
 | `app/Services/Payments/PaymentService.php` | Orchestrates full payment flow |
+| `app/Services/Security/OriginValidator.php` | Origin wildcard matching for public routes |
+| `app/Http/Middleware/AuthenticatePublicRequest.php` | Public key + origin authentication |
+| `app/Http/Controllers/Api/PublicPaymentController.php` | Public payment endpoints |
 | `amp/workers/webhook_worker.php` | Async webhook delivery with retries |
