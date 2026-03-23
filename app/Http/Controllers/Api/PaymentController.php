@@ -31,13 +31,13 @@ final class PaymentController extends Controller
         $project = $request->get('_project');
 
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0.01',
             'currency' => 'sometimes|string|size:3',
             'method' => 'required|in:credit_card,pix,qrcode,internal_balance',
             'description' => 'nullable|string|max:500',
             'customer_name' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email|max:255',
-            'card_number' => 'nullable|string|max:20',
+            'card_number' => 'required_if:method,credit_card|string|min:13|max:19',
             'metadata' => 'nullable|array',
         ]);
 

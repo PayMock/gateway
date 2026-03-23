@@ -18,9 +18,9 @@ final class WebhookPayloadBuilder
     }
 
     /**
-     * Creates a WebhookEvent record for the given transaction status change.
+     * Creates a WebhookEvent record for a status change.
      */
-    public function buildAndStore(Transaction $transaction, string $eventType): WebhookEvent
+    public function buildAndStore($source, string $eventType): WebhookEvent
     {
         $payload = [
             'id' => $this->tokenGenerator->generateEventId(),
@@ -28,20 +28,13 @@ final class WebhookPayloadBuilder
             'type' => $eventType,
             'created' => now()->timestamp,
             'data' => [
-                'object' => [
-                    'id' => $transaction->public_id,
-                    'object' => 'payment',
-                    'amount' => $transaction->amount,
-                    'currency' => $transaction->currency,
-                    'status' => $transaction->status,
-                    'method' => $transaction->method,
-                    'created' => $transaction->created_at->timestamp,
-                ],
+                'object' => $this->mapSourceObject($source),
             ],
         ];
 
         return WebhookEvent::create([
-            'transaction_id' => $transaction->id,
+            'transaction_id' => $source instanceof Transaction ? $source->id : null,
+            'payout_id' => $source instanceof \App\Models\Payout ? $source->id : null,
             'public_id' => $this->tokenGenerator->generateEventId(),
             'event_type' => $eventType,
             'payload' => $payload,
@@ -49,5 +42,33 @@ final class WebhookPayloadBuilder
             'attempts' => 0,
             'next_attempt_at' => now(),
         ]);
+    }
+
+    private function mapSourceObject($source): array
+    {
+        if ($source instanceof Transaction) {
+            return [
+                'id' => $source->public_id,
+                'object' => 'payment',
+                'amount' => $source->amount,
+                'currency' => $source->currency,
+                'status' => $source->status,
+                'method' => $source->method,
+                'created' => $source->created_at->timestamp,
+            ];
+        }
+
+        if ($source instanceof \App\Models\Payout) {
+            return [
+                'id' => $source->id, // Payout uses custom ID by default or just the id field
+                'object' => 'payout',
+                'amount' => $source->amount,
+                'status' => $source->status,
+                'transfer_details' => $source->transfer_details,
+                'created' => $source->created_at->timestamp,
+            ];
+        }
+
+        return [];
     }
 }

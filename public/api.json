@@ -1,0 +1,1785 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "PayMock",
+        "version": "0.0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/api"
+        }
+    ],
+    "paths": {
+        "/v1/balance": {
+            "get": {
+                "operationId": "balance.index",
+                "summary": "Get a summary of the project's balances",
+                "tags": [
+                    "Balance"
+                ],
+                "parameters": [
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "balance"
+                                        },
+                                        "available": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "number"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string",
+                                                            "const": "brl"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "currency"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 1,
+                                            "maxItems": 1,
+                                            "additionalItems": false
+                                        },
+                                        "pending": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "number"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string",
+                                                            "const": "brl"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "currency"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 1,
+                                            "maxItems": 1,
+                                            "additionalItems": false
+                                        },
+                                        "withdrawn": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "number"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string",
+                                                            "const": "brl"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "currency"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 1,
+                                            "maxItems": 1,
+                                            "additionalItems": false
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "available",
+                                        "pending",
+                                        "withdrawn"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/balance/history": {
+            "get": {
+                "operationId": "balance.history",
+                "summary": "Get a list of balance transactions (ledger)",
+                "tags": [
+                    "Balance"
+                ],
+                "parameters": [
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "list"
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "const": "/v1/balance/history"
+                                        },
+                                        "has_more": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "url",
+                                        "has_more",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/balance/advance/options": {
+            "get": {
+                "operationId": "balance.advanceOptions",
+                "summary": "List available advance options/fees",
+                "tags": [
+                    "Balance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "list"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "const": 30
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "const": 15
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "number",
+                                                            "const": 1.5
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "const": 7
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "number",
+                                                            "const": 3
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "const": 3
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "number",
+                                                            "const": 4
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer",
+                                                            "const": 1
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "number",
+                                                            "const": 5
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "number",
+                                                            "const": 0.04
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "number",
+                                                            "const": 6
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "days": {
+                                                            "type": "integer"
+                                                        },
+                                                        "fee_percentage": {
+                                                            "type": "number",
+                                                            "const": 10
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "days",
+                                                        "fee_percentage"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 7,
+                                            "maxItems": 7,
+                                            "additionalItems": false
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/balance/advance": {
+            "post": {
+                "operationId": "balance.requestAdvance",
+                "summary": "Request an anticipation of pending balance",
+                "tags": [
+                    "Balance"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "minimum": 0.01
+                                    },
+                                    "days": {
+                                        "type": "number",
+                                        "enum": [
+                                            ""
+                                        ]
+                                    },
+                                    "_project": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "amount",
+                                    "days"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "invalid_request_error"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "type",
+                                                "message"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "error"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "original_amount": {
+                                            "type": "number"
+                                        },
+                                        "fee_percentage": {
+                                            "type": "string"
+                                        },
+                                        "fee_amount": {
+                                            "type": "number"
+                                        },
+                                        "net_amount": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "original_amount",
+                                        "fee_percentage",
+                                        "fee_amount",
+                                        "net_amount"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/payments": {
+            "get": {
+                "operationId": "listPayments",
+                "summary": "List payments",
+                "tags": [
+                    "Payments",
+                    "Payment"
+                ],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "starting_after",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "list"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "object": {
+                                                        "type": "string",
+                                                        "const": "payment"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number"
+                                                    },
+                                                    "currency": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "method": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "customer_name": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "customer_email": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "failure_reason": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "simulation_rule": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "created": {
+                                                        "type": "string"
+                                                    },
+                                                    "pix": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "qr_code_url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "qr_code_url"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "object",
+                                                    "amount",
+                                                    "currency",
+                                                    "status",
+                                                    "method",
+                                                    "description",
+                                                    "customer_name",
+                                                    "customer_email",
+                                                    "failure_reason",
+                                                    "simulation_rule",
+                                                    "created",
+                                                    "pix"
+                                                ]
+                                            }
+                                        },
+                                        "has_more": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "data",
+                                        "has_more"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createPayment",
+                "description": "Initiates a new payment and runs it through the simulation engine.\nUse X-PayMock-Rule header to force a specific simulation result.",
+                "summary": "Create a payment",
+                "tags": [
+                    "Payments",
+                    "Payment"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "minimum": 0.01
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 3
+                                    },
+                                    "method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "credit_card",
+                                            "pix",
+                                            "qrcode",
+                                            "internal_balance"
+                                        ]
+                                    },
+                                    "description": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 500
+                                    },
+                                    "customer_name": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 255
+                                    },
+                                    "customer_email": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "email",
+                                        "maxLength": 255
+                                    },
+                                    "card_number": {
+                                        "type": "string",
+                                        "minLength": 13,
+                                        "maxLength": 19
+                                    },
+                                    "metadata": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "_project": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "amount",
+                                    "method"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "payment"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "method": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer_name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer_email": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "failure_reason": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "simulation_rule": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "pix": {
+                                            "type": "object",
+                                            "properties": {
+                                                "qr_code_url": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "qr_code_url"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "amount",
+                                        "currency",
+                                        "status",
+                                        "method",
+                                        "description",
+                                        "customer_name",
+                                        "customer_email",
+                                        "failure_reason",
+                                        "simulation_rule",
+                                        "created",
+                                        "pix"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/payments/{id}": {
+            "get": {
+                "operationId": "getPayment",
+                "summary": "Get a payment",
+                "tags": [
+                    "Payments",
+                    "Payment"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "payment"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "method": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer_name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer_email": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "failure_reason": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "simulation_rule": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "pix": {
+                                            "type": "object",
+                                            "properties": {
+                                                "qr_code_url": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "qr_code_url"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "amount",
+                                        "currency",
+                                        "status",
+                                        "method",
+                                        "description",
+                                        "customer_name",
+                                        "customer_email",
+                                        "failure_reason",
+                                        "simulation_rule",
+                                        "created",
+                                        "pix"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payments/{id}/cancel": {
+            "post": {
+                "operationId": "cancelPayment",
+                "summary": "Cancel a payment",
+                "tags": [
+                    "Payments",
+                    "Payment"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "_project": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "payment"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "method": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer_name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customer_email": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "failure_reason": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "simulation_rule": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "pix": {
+                                            "type": "object",
+                                            "properties": {
+                                                "qr_code_url": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "qr_code_url"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "amount",
+                                        "currency",
+                                        "status",
+                                        "method",
+                                        "description",
+                                        "customer_name",
+                                        "customer_email",
+                                        "failure_reason",
+                                        "simulation_rule",
+                                        "created",
+                                        "pix"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "invalid_request"
+                                                },
+                                                "code": {
+                                                    "type": "string",
+                                                    "const": "payment_not_cancelable"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "type",
+                                                "code",
+                                                "message"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "error"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payouts": {
+            "get": {
+                "operationId": "payout.index",
+                "summary": "List payouts for the project",
+                "tags": [
+                    "Payout"
+                ],
+                "parameters": [
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "list"
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "const": "/v1/payouts"
+                                        },
+                                        "has_more": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "url",
+                                        "has_more",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "payout.store",
+                "summary": "Create a new payout request",
+                "tags": [
+                    "Payout"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "minimum": 5
+                                    },
+                                    "transfer_details": {
+                                        "type": "object",
+                                        "description": "Minimum withdrawal 5.00",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "pix",
+                                                    "bank_account"
+                                                ]
+                                            },
+                                            "pix_key": {
+                                                "type": "string"
+                                            },
+                                            "key_type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "cpf",
+                                                    "cnpj",
+                                                    "email",
+                                                    "phone",
+                                                    "random"
+                                                ]
+                                            },
+                                            "bank": {
+                                                "type": "string"
+                                            },
+                                            "agency": {
+                                                "type": "string"
+                                            },
+                                            "account": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "type"
+                                        ]
+                                    },
+                                    "_project": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "amount",
+                                    "transfer_details"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/payouts/{id}": {
+            "get": {
+                "operationId": "payout.show",
+                "summary": "Get a specific payout",
+                "tags": [
+                    "Payout"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Payout"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/projects": {
+            "post": {
+                "operationId": "createProject",
+                "description": "Creates a new sandbox project and returns the API key.\nStore the api_key securely \u2014 it will not be shown again in list responses.",
+                "summary": "Create a new project",
+                "tags": [
+                    "Projects",
+                    "Project"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "webhook_url": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "uri",
+                                        "maxLength": 500
+                                    }
+                                },
+                                "required": [
+                                    "name"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "project"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "api_key": {
+                                            "type": "string"
+                                        },
+                                        "webhook_url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name",
+                                        "api_key",
+                                        "webhook_url",
+                                        "created"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/projects/me": {
+            "get": {
+                "operationId": "getProject",
+                "summary": "Get a project",
+                "tags": [
+                    "Projects",
+                    "Project"
+                ],
+                "parameters": [
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "project"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "webhook_url": {
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name",
+                                        "webhook_url",
+                                        "created"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/simulation/rules": {
+            "get": {
+                "operationId": "listSimulationRules",
+                "description": "Returns all available simulation rules with their identifiers and priorities.\nUse these identifiers with the X-PayMock-Rule header to force specific outcomes.",
+                "summary": "List all simulation rules",
+                "tags": [
+                    "Simulation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "list"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "priority": {
+                                                        "type": "integer"
+                                                    },
+                                                    "class": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "priority",
+                                                    "class"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/simulate/payment": {
+            "post": {
+                "operationId": "forceSimulation",
+                "description": "Convenience endpoint to trigger a payment with a forced rule.\nEquivalent to POST /v1/payments with X-PayMock-Rule header.",
+                "summary": "Force a specific simulation scenario",
+                "tags": [
+                    "Simulation"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "rule": {
+                                        "type": "string"
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "minimum": 0.01
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 3
+                                    },
+                                    "method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "credit_card",
+                                            "pix",
+                                            "qrcode",
+                                            "internal_balance"
+                                        ]
+                                    },
+                                    "customer_name": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 255
+                                    },
+                                    "customer_email": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "email"
+                                    },
+                                    "_project": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "rule"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "transaction_id": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "failure_reason": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "simulation_rule": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "transaction_id",
+                                        "status",
+                                        "failure_reason",
+                                        "simulation_rule"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/webhooks": {
+            "get": {
+                "operationId": "listWebhooks",
+                "summary": "List webhooks",
+                "tags": [
+                    "Webhooks",
+                    "Webhook"
+                ],
+                "parameters": [
+                    {
+                        "name": "_project",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "list"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "object": {
+                                                        "type": "string",
+                                                        "const": "webhook"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "created": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "object",
+                                                    "url",
+                                                    "created"
+                                                ]
+                                            }
+                                        },
+                                        "has_more": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "data",
+                                        "has_more"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createWebhook",
+                "summary": "Register a webhook endpoint",
+                "tags": [
+                    "Webhooks",
+                    "Webhook"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "maxLength": 500
+                                    },
+                                    "_project": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "url"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "object": {
+                                            "type": "string",
+                                            "const": "webhook"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "secret": {
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "type": "string",
+                                            "description": "Only shown once on creation"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "url",
+                                        "secret",
+                                        "created"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Payout": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "project_id": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "transfer_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "completed_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "project_id",
+                    "amount",
+                    "status",
+                    "transfer_details",
+                    "completed_at",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "Payout"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

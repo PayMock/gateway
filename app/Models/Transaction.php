@@ -13,6 +13,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'project_id',
+        'charge_id',
         'public_id',
         'external_id',
         'amount',
@@ -42,6 +43,11 @@ class Transaction extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function charge(): BelongsTo
+    {
+        return $this->belongsTo(Charge::class);
     }
 
     public function attempts(): HasMany

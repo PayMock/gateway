@@ -74,9 +74,11 @@ class BalanceController extends Controller
      */
     public function requestAdvance(Request $request): JsonResponse
     {
+        $validDays = collect($this->advanceService->getAdvanceOptions())->pluck('days')->toArray();
+
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
-            'days' => 'required|numeric',
+            'days' => 'required|numeric|in:' . implode(',', $validDays),
         ]);
 
         $project = $request->get('_project');

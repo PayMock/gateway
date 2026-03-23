@@ -20,10 +20,12 @@ return [
 
     'prefixes' => [
         'project' => 'proj_',
+        'charge' => 'chg_',
         'payment' => 'pay_',
         'event' => 'evt_',
         'webhook' => 'wh_',
         'api_key' => 'sk_test_',
+        'public_key' => 'pk_test_',
         'balance_transaction' => 'btxn_',
         'payout' => 'po_',
     ],

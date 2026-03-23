@@ -28,6 +28,8 @@ PayMock is a realistic payment gateway simulator. It's designed for:
 - ✅ **Balance & Settlement system** (Pending, Available, Withdrawn)
 - ✅ **Cash Advance (Anticipation)** with configurable fee schedules
 - ✅ **Payout Management** for withdrawals
+- ✅ **Charge model** — separate payment intent (merchant) from execution (customer)
+- ✅ **Public API** (`/v1/public/*`) — client-side routes with `public_key` + origin allowlist
 - ✅ Automatic OpenAPI docs via Scramble (`/docs/api`)
 
 ---
@@ -74,9 +76,13 @@ Response:
 {
   "id": "proj_xxxxxxxxxxx",
   "object": "project",
-  "api_key": "sk_test_PROJECT_API_KEY"
+  "api_key": "sk_test_PROJECT_API_KEY",
+  "public_key": "pk_test_PUBLIC_KEY",
+  "allowed_origins": []
 }
 ```
+
+The `api_key` is for **server-to-server** calls only. The `public_key` is safe to embed in frontend code.
 
 ### 2. Create a payment
 
@@ -130,7 +136,79 @@ curl -X POST http://localhost:8080/api/v1/balance/advance \
   -d '{"timeframe": "instant"}'
 ```
 
-### 6. Payout (Withdrawal)
+### 6. Charge-based payment flow (frontend integration)
+
+This is the recommended flow when your frontend needs to accept payments.
+
+**Step 1 — Backend creates a charge:**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/charges \
+  -H "Authorization: Bearer sk_test_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 50.00, "description": "Order #2049", "customer_email": "jane@example.com"}'
+# → { "id": "chg_xxx", "status": "pending" }
+```
+
+**Step 2 — Frontend pays the charge (PIX):**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/public/charges/chg_xxx/pay \
+  -H "X-Public-Key: pk_test_xxx" \
+  -H "Origin: https://myapp.com" \
+  -H "Content-Type: application/json" \
+  -d '{"method": "pix"}'
+```
+
+Response:
+```json
+{
+  "status": "pending",
+  "method": "pix",
+  "payment": {
+    "qr_code_url": "http://localhost:8080/pay/TOKEN",
+    "qr_code_base64": "PHN2Zy4uLg==",
+    "qr_code_mime": "image/svg+xml"
+  }
+}
+```
+
+Embed the QR code inline: `<img src="data:image/svg+xml;base64,{qr_code_base64}" />`
+
+The customer visits `qr_code_url`, simulates payment by clicking **"Confirm Payment"**, and the charge becomes `paid`.
+
+**Step 2 (alternative) — Frontend pays the charge (credit card):**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/public/charges/chg_xxx/pay \
+  -H "X-Public-Key: pk_test_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"method": "credit_card", "card_number": "4111111111111111",
+       "card_holder_name": "Jane Doe", "card_expiry": "12/28", "card_cvv": "123"}'
+# → status "paid" (charge approved) or "fraud"/"failed" based on simulation rules
+```
+
+**Step 3 — Poll charge status:**
+
+```bash
+curl http://localhost:8080/api/v1/public/charges/chg_xxx/status \
+  -H "X-Public-Key: pk_test_xxx"
+# → { "status": "pending" | "paid" | "canceled" }
+```
+
+**Restricting origins (optional):**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/projects \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My App", "allowed_origins": ["https://myapp.com", "*.staging.myapp.com"]}'
+```
+
+Wildcard rules:
+- `*.domain.com` — one subdomain level (`app.domain.com` ✅, `x.app.domain.com` ❌)
+- `*.*.domain.com` — two subdomain levels (`x.app.domain.com` ✅)
+
+### 7. Payout (Withdrawal)
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/payouts \
@@ -138,7 +216,7 @@ curl -X POST http://localhost:8080/api/v1/payouts \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 100.00,
-    "bank_details": {
+    "transfer_details": {
       "pix_key": "user@example.com",
       "bank_name": "Mock Bank"
     }
@@ -181,11 +259,18 @@ OpenAPI JSON: `http://localhost:8080/docs/api.json`
 
 ### Endpoints
 
+#### Private routes (server-to-server, `Authorization: Bearer sk_test_xxx`)
+
 ```
-POST   /api/v1/projects              Create project (public)
+POST   /api/v1/projects              Create project (no auth)
 GET    /api/v1/projects/me           Get current project
 
-POST   /api/v1/payments              Create payment
+GET    /api/v1/charges               List charges
+POST   /api/v1/charges               Create charge (chg_xxx)
+GET    /api/v1/charges/{id}          Get charge
+POST   /api/v1/charges/{id}/cancel   Cancel charge
+
+POST   /api/v1/payments              Direct payment (server-side)
 GET    /api/v1/payments              List payments
 GET    /api/v1/payments/{id}         Get payment
 POST   /api/v1/payments/{id}/cancel  Cancel payment
@@ -206,25 +291,49 @@ GET    /api/v1/simulation/rules      List simulation rules
 POST   /api/v1/simulate/payment      Force simulation scenario
 ```
 
+#### Public routes (client-side, `X-Public-Key: pk_test_xxx` + `Origin`)
+
+```
+GET    /api/v1/public/payment-methods           List payment methods
+POST   /api/v1/public/charges/{id}/pay          Pay charge (PIX or card)
+GET    /api/v1/public/charges/{id}/status       Poll charge status
+GET    /api/v1/public/charges/{id}/qrcode       PIX QR code SVG
+```
+
+#### Web (browser) — PIX confirmation simulation
+
+```
+GET    /pay/{token}                  Payment confirmation page
+POST   /pay/{token}/confirm          Simulate customer confirming PIX
+```
+
 ---
 
 ## Architecture
 
 ```
-Client
-  │
-  ▼
-Laravel API (/api/v1/*)
-  │
-  ▼
-PaymentService → SimulationEngine → SimulationDecision
-  │
-  ▼
+Merchant (backend)                   Customer (browser/mobile)
+        │                                      │
+        ▼                                      ▼
+POST /api/v1/charges              POST /api/v1/public/charges/{id}/pay
+Authorization: Bearer sk_test_xxx  X-Public-Key: pk_test_xxx
+        │                          Origin: https://myapp.com
+        ▼                                      │
+    ChargeService                              ▼
+    creates Charge (chg_xxx)       PIX: create pending Transaction
+        │                              → return QR code URL + base64
+        │                          Card: ChargeService → PaymentService
+        │                              → SimulationEngine → Decision
+        │                              → if approved → charge.status = paid
+        ▼
 WebhookDispatcher → Redis Stream
                           │
                           ▼
                    AMP Webhook Worker
                    (concurrent HTTP delivery)
+
+PIX confirmation (simulated):
+  Customer visits /pay/{token} → clicks "Confirm" → transaction + charge = paid
 ```
 
 ---

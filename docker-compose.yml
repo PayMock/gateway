@@ -78,6 +78,26 @@ services:
     networks:
       - paymock
 
+  queue_worker:
+    build:
+      context: docker/php
+      dockerfile: Dockerfile
+    container_name: paymock_queue_worker
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3
+    volumes:
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - paymock
+
 volumes:
   postgres_data:
   redis_data:

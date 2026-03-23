@@ -43,6 +43,7 @@ return [
         'issuer_unavailable' => '8888',
         'gateway_down' => '9999',
         'slow_issuer' => '4111',
+        'fraud' => '1313',   // card contains/endswith 1313 → fraud
     ],
 
     /*

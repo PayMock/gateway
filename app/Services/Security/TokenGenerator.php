@@ -10,6 +10,11 @@ use Illuminate\Support\Str;
  */
 final class TokenGenerator
 {
+    public function generateChargeId(): string
+    {
+        return $this->withPrefix(config('gateway.prefixes.charge'));
+    }
+
     public function generatePaymentId(): string
     {
         return $this->withPrefix(config('gateway.prefixes.payment'));
@@ -23,6 +28,11 @@ final class TokenGenerator
     public function generateApiKey(): string
     {
         return config('gateway.prefixes.api_key') . Str::random(24);
+    }
+
+    public function generatePublicKey(): string
+    {
+        return config('gateway.prefixes.public_key') . Str::random(24);
     }
 
     public function generateWebhookId(): string
